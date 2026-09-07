@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Asistencia - Certificación</title>
+    <!-- Tailwind CSS para un diseño limpio y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para generar códigos QR dinámicamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="max-w-xl w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 text-center">
+        
+        <!-- Encabezado -->
+        <h1 class="text-3xl font-extrabold mb-2 text-indigo-400">Control de Asistencia</h1>
+        <p id="fecha-actual" class="text-slate-400 text-sm mb-6"></p>
+
+        <!-- Contenedor Dinámico según la sesión de hoy -->
+        <div id="contenido-sesion">
+            <div class="animate-pulse flex flex-col items-center">
+                <div class="h-6 bg-slate-700 rounded w-3/4 mb-4"></div>
+                <div class="h-32 bg-slate-700 rounded w-32 mb-4"></div>
+                <div class="h-10 bg-slate-700 rounded w-1/2"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script de lógica -->
+    <script>
+        async function cargarAsistencia() {
+            const contenedor = document.getElementById('contenido-sesion');
+            const labelFecha = document.getElementById('fecha-actual');
+            
+            // Obtener fecha actual en formato local YYYY-MM-DD
+            const hoy = new Date();
+            const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            labelFecha.textContent = hoy.toLocaleDateString('es-ES', opcionesFecha);
+            
+            // Formato YYYY-MM-DD para comparar con el JSON
+            const anio = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            const fechaHoyStr = `${anio}-${mes}-${dia}`;
+
+            try {
+                // Cargar el archivo pin.json
+                const respuesta = await fetch('pin.json');
+                if (!respuesta.ok) throw new Error('No se pudo cargar el archivo pin.json');
+                
+                const sesiones = await respuesta.json();
+
+                // Buscar si hay sesión programada para el día de hoy
+                const sesionHoy = sesiones.find(s => s.Fecha_Sesion === fechaHoyStr);
+
+                if (!sesionHoy) {
+                    contenedor.innerHTML = `
+                        <div class="bg-amber-500/10 border border-amber-500/30 text-amber-300 p-6 rounded-xl">
+                            <h2 class="text-xl font-bold mb-2">Sin sesión programada para hoy</h2>
+                            <p class="text-sm">No hay registro de clases de certificación activas para esta fecha.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Si hay sesión, mostramos la información y generamos el QR
+                contenedor.innerHTML = `
+                    <div class="mb-6">
+                        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-semibold rounded-full uppercase tracking-wider">${sesionHoy.Grupo}</span>
+                        <h2 class="text-2xl font-bold mt-2 text-white">${sesionHoy.Materia}</h2>
+                        <p class="text-slate-400 text-sm mt-1">Horario: ${sesionHoy.Hora_Inicio} - ${sesionHoy.Hora_Fin}</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl inline-block shadow-lg mb-6">
+                        <div id="qrcode" class="flex justify-center"></div>
+                    </div>
+
+                    <div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+                        <span class="text-xs uppercase tracking-widest text-slate-400 block font-semibold">PIN de la Sesión</span>
+                        <span class="text-4xl font-mono font-black text-emerald-400 tracking-widest mt-1 block">${sesionHoy.PIN}</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mt-6">Escanea el código QR o ingresa a tu Microsoft Forms institucional para registrar tu asistencia usando este PIN.</p>
+                `;
+
+                // Generar el código QR apuntando al formulario de Microsoft Forms
+                // (Puedes reemplazar el enlace de ejemplo por la URL directa de tu Forms)
+                const urlFormulario = "https://forms.office.com/r/TU_FORMULARIO_ID"; 
+                
+                new QRCode(document.getElementById("qrcode"), {
+                    text: urlFormulario,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#0f172a",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+            } catch (error) {
+                console.error(error);
+                contenedor.innerHTML = `
+                    <div class="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-6 rounded-xl">
+                        <h2 class="text-xl font-bold mb-2">Error de sistema</h2>
+                        <p class="text-sm">No se pudo leer el archivo de configuración de PINs (` + error.message + `).</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Ejecutar al cargar la página
+        cargarAsistencia();
+    </script>
+</body>
+</html>
