@@ -1,134 +1,123 @@
-function main(workbook: ExcelScript.Workbook, 
-              correo: string, 
-              fechaHoraStr: string, 
-              pinIngresado: string, 
-              responseId: string) {
-    
-    // Validar que la fecha no venga vacía
-    if (!fechaHoraStr || typeof fechaHoraStr !== 'string' || fechaHoraStr.trim() === "") {
-        throw new Error("La fecha y hora recibidas están vacías o no son válidas.");
-    }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Asistencia - Certificación</title>
+    <!-- Favicon con el logotipo institucional -->
+    <link rel="icon" type="image/png" href="images.png">
+    <!-- Tailwind CSS para un diseño limpio y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para generar códigos QR dinámicamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
 
-    // Normalizar la cadena de fecha (formato ISO)
-    let fechaLimpiaStr = fechaHoraStr.trim().replace(" ", "T");
-    let fechaEnvio = new Date(fechaLimpiaStr);
+    <div class="max-w-xl w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 text-center">
+        
+        <!-- Logotipo institucional visualizado en la cabecera -->
+        <div class="flex justify-center mb-4">
+            <img src="images.png" alt="Logo UJK" class="w-16 h-16 rounded-xl object-cover shadow-md border border-slate-600">
+        </div>
 
-    if (isNaN(fechaEnvio.getTime())) {
-        fechaEnvio = new Date(); 
-    }
+        <!-- Encabezado -->
+        <h1 class="text-3xl font-extrabold mb-1 text-indigo-400">Control de Asistencia</h1>
+        <p class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-semibold">Educación Continua / Certificación</p>
+        <p id="fecha-actual" class="text-slate-300 text-sm mb-6"></p>
 
-    // Ajustar automáticamente de UTC a Hora de México (Restar 6 horas)
-    fechaEnvio.setHours(fechaEnvio.getHours() - 6);
+        <!-- Contenedor Dinámico según la sesión de hoy -->
+        <div id="contenido-sesion">
+            <div class="animate-pulse flex flex-col items-center">
+                <div class="h-6 bg-slate-700 rounded w-3/4 mb-4"></div>
+                <div class="h-32 bg-slate-700 rounded w-32 mb-4"></div>
+                <div class="h-10 bg-slate-700 rounded w-1/2"></div>
+            </div>
+        </div>
 
-    let anio = fechaEnvio.getFullYear();
-    let mes = String(fechaEnvio.getMonth() + 1).padStart(2, '0');
-    let dia = String(fechaEnvio.getDate()).padStart(2, '0');
-    let horas = String(fechaEnvio.getHours()).padStart(2, '0');
-    let minutos = String(fechaEnvio.getMinutes()).padStart(2, '0');
+    </div>
 
-    let fechaLimpia = `${anio}-${mes}-${dia}`; // "YYYY-MM-DD"
-    let horaLimpiaMinutos = parseInt(horas) * 60 + parseInt(minutos); 
-    let horaParaMostrar = `${horas}:${minutos}`; // Hora local corregida (Ej. 19:15)
-    
-    let jsDay = fechaEnvio.getDay();
-    let diaSemana = jsDay === 0 ? 7 : jsDay; // 1=Lunes ... 3=Miércoles, 4=Jueves
+    <!-- Script de lógica -->
+    <script>
+        async function cargarAsistencia() {
+            const contenedor = document.getElementById('contenido-sesion');
+            const labelFecha = document.getElementById('fecha-actual');
+            
+            // Obtener fecha actual en formato local
+            const hoy = new Date();
+            const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            labelFecha.textContent = hoy.toLocaleDateString('es-ES', opcionesFecha);
+            
+            // Formato YYYY-MM-DD para comparar con el JSON
+            const anio = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            const fechaHoyStr = `${anio}-${mes}-${dia}`;
 
-    // 1. Leer la tabla de Alumnos (Base_Alumnos / T_Alumnos)
-    let sheetAlumnos = workbook.getWorksheet("Base_Alumnos");
-    let tablaAlumnos = sheetAlumnos.getTable("T_Alumnos");
-    let alumnosData = tablaAlumnos.getRange().getTexts();
-    let headersAlumnos = tablaAlumnos.getHeaderRowRange().getTexts()[0];
+            try {
+                // Cargar el archivo pin.json
+                const respuesta = await fetch('pin.json');
+                if (!respuesta.ok) throw new Error('No se pudo cargar el archivo pin.json');
+                
+                const sesiones = await respuesta.json();
 
-    let colCorreo = headersAlumnos.indexOf("Correo_Institucional");
-    let colMateria = headersAlumnos.indexOf("Materia");
-    let colDia = headersAlumnos.indexOf("Dia");
-    let colInicio = headersAlumnos.indexOf("Hora_Inicio");
-    let colFin = headersAlumnos.indexOf("Hora_Fin");
-    let colNombre = headersAlumnos.indexOf("Nombre");
+                // Buscar si hay sesión programada para el día de hoy
+                const sesionHoy = sesiones.find(s => s.Fecha_Sesion === fechaHoyStr);
 
-    let nombreAlumno = "Desconocido";
-    let materiaEncontrada = "";
-    let matchEncontrado = false;
+                if (!sesionHoy) {
+                    contenedor.innerHTML = `
+                        <div class="bg-amber-500/10 border border-amber-500/30 text-amber-300 p-6 rounded-xl">
+                            <h2 class="text-xl font-bold mb-2">Sin sesión programada para hoy</h2>
+                            <p class="text-sm">No hay registro de clases de certificación activas para esta fecha.</p>
+                        </div>
+                    `;
+                    return;
+                }
 
-    function timeToMinutes(timeStr: string): number {
-        if (!timeStr) return 0;
-        let parts = timeStr.trim().substring(0, 5).split(":");
-        if (parts.length < 2) return 0;
-        return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    }
+                // Si hay sesión, mostramos la información y generamos el QR
+                contenedor.innerHTML = `
+                    <div class="mb-6">
+                        <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-semibold rounded-full uppercase tracking-wider">${sesionHoy.Grupo}</span>
+                        <h2 class="text-2xl font-bold mt-2 text-white">${sesionHoy.Materia}</h2>
+                        <p class="text-slate-400 text-sm mt-1">Horario: ${sesionHoy.Hora_Inicio} - ${sesionHoy.Hora_Fin}</p>
+                    </div>
 
-    // 2. Buscar alumno y materia por horario y día
-    for (let i = 1; i < alumnosData.length; i++) {
-        let row = alumnosData[i];
-        if (row[colCorreo].trim().toLowerCase() === correo.trim().toLowerCase()) {
-            nombreAlumno = row[colNombre];
-            let diaClase = parseInt(row[colDia]);
-            let horaInicioMin = timeToMinutes(row[colInicio]);
-            let horaFinMin = timeToMinutes(row[colFin]);
+                    <div class="bg-white p-6 rounded-xl inline-block shadow-lg mb-6">
+                        <div id="qrcode" class="flex justify-center"></div>
+                    </div>
 
-            // Validar si coincide el día y si la hora de envío está en el rango de la clase
-            if (diaClase === diaSemana && horaLimpiaMinutos >= horaInicioMin && horaLimpiaMinutos <= horaFinMin) {
-                materiaEncontrada = row[colMateria];
-                matchEncontrado = true;
-                break;
+                    <div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+                        <span class="text-xs uppercase tracking-widest text-slate-400 block font-semibold">PIN de la Sesión</span>
+                        <span class="text-4xl font-mono font-black text-emerald-400 tracking-widest mt-1 block">${sesionHoy.PIN}</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mt-6">Escanea el código QR o ingresa a tu Microsoft Forms institucional para registrar tu asistencia usando este PIN.</p>
+                `;
+
+                // URL oficial del formulario proporcionada
+                const urlFormulario = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=GLuMkMtiv0qNgXNUIBnVib19QUgiNrVPvnvirf5lPohUMFNOQ1RIMkNSTkFRSEpEMjZJQ1IzTDlKRS4u"; 
+                
+                new QRCode(document.getElementById("qrcode"), {
+                    text: urlFormulario,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#0f172a",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+            } catch (error) {
+                console.error(error);
+                contenedor.innerHTML = `
+                    <div class="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-6 rounded-xl">
+                        <h2 class="text-xl font-bold mb-2">Error de sistema</h2>
+                        <p class="text-sm">No se pudo leer el archivo de configuración de PINs (` + error.message + `).</p>
+                    </div>
+                `;
             }
         }
-    }
 
-    let resultadoFinal = "Falta";
-    let motivoValidacion = "";
-    let pinOficialStr = "-";
-
-    if (!matchEncontrado) {
-        motivoValidacion = "Alumno fuera de horario o no encontrado";
-    } else {
-        // 3. Buscar PIN oficial en Pines_Sesiones basándose únicamente en Fecha y Materia
-        let sheetPines = workbook.getWorksheet("PINs_Sesiones");
-        let tablaPines = sheetPines.getTable("Pines_Sesiones");
-        let pinesData = tablaPines.getRange().getTexts();
-        let headersPines = tablaPines.getHeaderRowRange().getTexts()[0];
-
-        let colPFecha = headersPines.indexOf("Fecha_Sesion");
-        let colPMateria = headersPines.indexOf("Materia");
-        let colPPin = headersPines.indexOf("PIN");
-
-        let pinEncontrado = false;
-
-        for (let j = 1; j < pinesData.length; j++) {
-            let pRow = pinesData[j];
-            let pFecha = pRow[colPFecha].split('T')[0];
-            let pMateria = pRow[colPMateria].trim();
-
-            if (pFecha === fechaLimpia && pMateria.toLowerCase() === materiaEncontrada.toLowerCase()) {
-                pinOficialStr = pRow[colPPin].toString().trim();
-                pinEncontrado = true;
-                break;
-            }
-        }
-
-        if (!pinEncontrado) {
-            motivoValidacion = "PIN no programado para esta sesión";
-        } else if (pinIngresado.trim() === pinOficialStr) {
-            resultadoFinal = "Asistencia Válida";
-            motivoValidacion = "Ninguno";
-        } else {
-            motivoValidacion = "PIN Incorrecto";
-        }
-    }
-
-    // 4. Guardar el resultado en la tabla de auditoría (T_Respuestas / Respuestas_Crudas)
-    let sheetRespuestas = workbook.getWorksheet("Respuestas_Crudas");
-    let tablaRespuestas = sheetRespuestas.getTable("T_Respuestas");
-    
-    tablaRespuestas.addRow(-1, [
-        responseId,
-        correo,
-        `${fechaLimpia} ${horaParaMostrar}`, 
-        pinIngresado,
-        nombreAlumno,
-        materiaEncontrada,
-        pinOficialStr,
-        resultadoFinal,
-        motivoValidacion
-    ]);
-}
+        // Ejecutar al cargar la página
+        cargarAsistencia();
+    </script>
+</body>
+</html>
