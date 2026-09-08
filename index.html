@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Asistencia - Certificación</title>
+    <!-- Favicon con el logotipo institucional -->
+    <link rel="icon" type="image/png" href="images.png">
     <!-- Tailwind CSS para un diseño limpio y moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Librería para generar códigos QR dinámicamente -->
@@ -13,9 +15,15 @@
 
     <div class="max-w-xl w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 text-center">
         
+        <!-- Logotipo institucional visualizado en la cabecera -->
+        <div class="flex justify-center mb-4">
+            <img src="images.png" alt="Logo UJK" class="w-16 h-16 rounded-xl object-cover shadow-md border border-slate-600">
+        </div>
+
         <!-- Encabezado -->
-        <h1 class="text-3xl font-extrabold mb-2 text-indigo-400">Control de Asistencia</h1>
-        <p id="fecha-actual" class="text-slate-400 text-sm mb-6"></p>
+        <h1 class="text-3xl font-extrabold mb-1 text-indigo-400">Control de Asistencia</h1>
+        <p class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-semibold">Educación Continua / Certificación</p>
+        <p id="fecha-actual" class="text-slate-300 text-sm mb-6"></p>
 
         <!-- Contenedor Dinámico según la sesión de hoy -->
         <div id="contenido-sesion">
@@ -34,7 +42,7 @@
             const contenedor = document.getElementById('contenido-sesion');
             const labelFecha = document.getElementById('fecha-actual');
             
-            // Obtener fecha actual en formato local YYYY-MM-DD
+            // Obtener fecha actual en formato local
             const hoy = new Date();
             const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             labelFecha.textContent = hoy.toLocaleDateString('es-ES', opcionesFecha);
@@ -85,12 +93,11 @@
                     <p class="text-xs text-slate-400 mt-6">Escanea el código QR o ingresa a tu Microsoft Forms institucional para registrar tu asistencia usando este PIN.</p>
                 `;
 
-                // Generar el código QR apuntando al formulario de Microsoft Forms
-                // (Puedes reemplazar el enlace de ejemplo por la URL directa de tu Forms)
-                const urlFormulario = "https://forms.office.com/r/TU_FORMULARIO_ID"; 
+                // URL oficial del formulario proporcionada
+                const urlFormulario = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=GLuMkMtiv0qNgXNUIBnVib19QUgiNrVPvnvirf5lPohUMFNOQ1RIMkNSTkFRSEpEMjZJQ1IzTDlKRS4u"; 
                 
                 new QRCode(document.getElementById("qrcode"), {
-                    text: https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=GLuMkMtiv0qNgXNUIBnVib19QUgiNrVPvnvirf5lPohUMFNOQ1RIMkNSTkFRSEpEMjZJQ1IzTDlKRS4u,
+                    text: urlFormulario,
                     width: 180,
                     height: 180,
                     colorDark: "#0f172a",
