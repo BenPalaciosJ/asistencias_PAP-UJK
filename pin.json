@@ -167,4 +167,13 @@
         "Hora_Fin": "21:00",
         "PIN": "6755"
     }
+    ,
+    {
+        "Fecha_Sesion": "2026-09-07",
+        "Materia": "Costos y Presupuestos",
+        "Grupo": "Certificación - CP",
+        "Hora_Inicio": "18:00",
+        "Hora_Fin": "21:00",
+        "PIN": "6755"
+    }
 ]
