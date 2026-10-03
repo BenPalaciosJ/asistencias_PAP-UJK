@@ -36,7 +36,7 @@
 
     </div>
 
-    <!-- Script de lógica -->
+    <!-- Script de lógica limpio y libre de errores de formato -->
     <script>
         async function cargarAsistencia() {
             const contenedor = document.getElementById('contenido-sesion');
@@ -54,8 +54,8 @@
             const fechaHoyStr = `${anio}-${mes}-${dia}`;
 
             try {
-                // Cargar el archivo pin.json
-                const respuesta = await fetch('pin.json');
+                // Cargar el archivo pin.json con prevencion de caché
+                const respuesta = await fetch('pin.json?nocache=' + new Date().getTime());
                 if (!respuesta.ok) throw new Error('No se pudo cargar el archivo pin.json');
                 
                 const sesiones = await respuesta.json();
@@ -67,7 +67,7 @@
                     contenedor.innerHTML = `
                         <div class="bg-amber-500/10 border border-amber-500/30 text-amber-300 p-6 rounded-xl">
                             <h2 class="text-xl font-bold mb-2">Sin sesión programada para hoy</h2>
-                            <p class="text-sm">No hay registro de clases de certificación activas para esta fecha.</p>
+                            <p class="text-sm">No hay registro de clases de certificación activas para la fecha: ${fechaHoyStr}.</p>
                         </div>
                     `;
                     return;
@@ -110,7 +110,7 @@
                 contenedor.innerHTML = `
                     <div class="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-6 rounded-xl">
                         <h2 class="text-xl font-bold mb-2">Error de sistema</h2>
-                        <p class="text-sm">No se pudo leer el archivo de configuración de PINs (` + error.message + `).</p>
+                        <p class="text-sm">No se pudo leer el archivo de configuración de PINs (${error.message}).</p>
                     </div>
                 `;
             }
