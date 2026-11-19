@@ -95,6 +95,14 @@
         "Hora_Fin": "21:00",
         "PIN": "3261"
     },
+     {
+        "Fecha_Sesion": "2026-11-18",
+        "Materia": "Administración de Proyectos",
+        "Grupo": "Certificación - AP",
+        "Hora_Inicio": "19:00",
+        "Hora_Fin": "21:00",
+        "PIN": "5231"
+    },
     {
         "Fecha_Sesion": "2026-07-30",
         "Materia": "Costos y Presupuestos",
