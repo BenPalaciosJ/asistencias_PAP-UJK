@@ -104,75 +104,14 @@
         "PIN": "5231"
     },
     {
-        "Fecha_Sesion": "2026-07-30",
+        "Fecha_Sesion": "2026-11-25",
         "Materia": "Costos y Presupuestos",
         "Grupo": "Certificación - CP",
         "Hora_Inicio": "19:00",
         "Hora_Fin": "21:00",
         "PIN": "9041"
     },
-    {
-        "Fecha_Sesion": "2026-08-06",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "3472"
-    },
-    {
-        "Fecha_Sesion": "2026-08-13",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "6183"
-    },
-    {
-        "Fecha_Sesion": "2026-08-20",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "2590"
-    },
-    {
-        "Fecha_Sesion": "2026-08-27",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "7843"
-    },
-    {
-        "Fecha_Sesion": "2026-09-03",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "1564"
-    },
-    {
-        "Fecha_Sesion": "2026-09-10",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "4920"
-    },
-    {
-        "Fecha_Sesion": "2026-09-17",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
-        "PIN": "8312"
-    },
-    {
-        "Fecha_Sesion": "2026-09-24",
-        "Materia": "Costos y Presupuestos",
-        "Grupo": "Certificación - CP",
-        "Hora_Inicio": "19:00",
-        "Hora_Fin": "21:00",
+   
         "PIN": "6755"
     }
 ]
